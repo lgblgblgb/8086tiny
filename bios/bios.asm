@@ -65,7 +65,7 @@ bios_entry:
 
 	; Set up initial stack to F000:F000
 
-	mov	sp, 0xf000
+	mov	sp, 0xF000
 	mov	ss, sp
 
 	push	cs
@@ -182,7 +182,7 @@ calc_heads:
 	mov	ax, [cs:hd_max_track]
 	cmp	ax, 1024
 	ja	track_overflow
-	
+
 	jmp	calc_end
 
 track_overflow:
@@ -206,7 +206,7 @@ calc_end:
 
 	dec	word [cs:hd_max_track]
 	dec	word [cs:hd_max_head]
-	
+
 ; Main BIOS entry point. Zero the flags, and set up registers.
 
 boot:	mov	ax, 0
@@ -217,8 +217,8 @@ boot:	mov	ax, 0
 	push	cs
 	pop	ds
 	pop	ss
-	mov	sp, 0xf000
-	
+	mov	sp, 0xF000
+
 ; Set up the IVT. First we zero out the table
 
 	cld
@@ -238,9 +238,9 @@ boot:	mov	ax, 0
 
 ; Set pointer to INT 41 table for hard disk
 
-	mov	cx, int41
+	mov	cx, int_41
 	mov	word [es:4*0x41], cx
-	mov	cx, 0xf000
+	mov	cx, 0xF000
 	mov	word [es:4*0x41 + 2], cx
 
 ; Set up last 16 bytes of memory, including boot jump, BIOS date, machine ID byte
@@ -360,7 +360,7 @@ next_out:
 
 ; ************************* INT 7h handler - keyboard driver (8086tiny internal)
 
-int7:	; Whenever the user presses a key, INT 7 is called by the emulator.
+int_07:	; Whenever the user presses a key, INT 7 is called by the emulator.
 	; ASCII character of the keystroke is at 0040:this_keystroke
 
 	push	ds
@@ -508,7 +508,7 @@ int7:	; Whenever the user presses a key, INT 7 is called by the emulator.
 
 	cmp	ax, 0x111 ; SDL cursor keys
 	jb	sdl_process_key ; No special handling for other keys yet
-	
+
 	sub	ax, 0x111
 	mov	bx, unix_cursor_xlt
 	xlat	; Convert SDL cursor keys to scancode
@@ -545,12 +545,12 @@ int7:	; Whenever the user presses a key, INT 7 is called by the emulator.
   sdl_key_down:
 
 	mov	[es:this_keystroke-bios_data], al
-		
+
   sdl_not_in_buf:
 
 	mov	al, bh
 	call	io_key_available
-	jmp	i2_dne	
+	jmp	i2_dne
 
   check_linux_bksp:
 
@@ -612,7 +612,7 @@ int7:	; Whenever the user presses a key, INT 7 is called by the emulator.
 	jne	i2_sf
 
 	; Stuff an ESC character
-	
+
 	mov	byte [es:this_keystroke-bios_data], 0x1b
 
 	mov	al, 0x01
@@ -634,7 +634,7 @@ int7:	; Whenever the user presses a key, INT 7 is called by the emulator.
 	je	i2_esc
 
 	; It isn't, so stuff an ESC character plus this key
-	
+
 	mov	byte [es:this_keystroke-bios_data], 0x1b
 
 	mov	al, 0x01
@@ -667,7 +667,7 @@ int7:	; Whenever the user presses a key, INT 7 is called by the emulator.
 
 	mov	byte [es:this_keystroke-bios_data], 0
 	jmp	after_translate
-	
+
   i2_regular_key:
 
 	mov	byte [es:notranslate_flg-bios_data], 0
@@ -736,9 +736,9 @@ int7:	; Whenever the user presses a key, INT 7 is called by the emulator.
 	cmp	byte [es:this_keystroke-bios_data], 1 ; Ctrl+F then Ctrl+A outputs code for Ctrl+A
 	je	after_translate
 
-	cmp	byte [es:this_keystroke-bios_data], 6 ; Ctrl+F then Ctrl+F outputs code for Ctrl+F  
+	cmp	byte [es:this_keystroke-bios_data], 6 ; Ctrl+F then Ctrl+F outputs code for Ctrl+F
 	je	after_translate
-	
+
 	mov	byte [es:this_keystroke-bios_data], 0	; Fxx key, so zero out ASCII code
 	add	al, 0x39
 
@@ -804,7 +804,7 @@ int7:	; Whenever the user presses a key, INT 7 is called by the emulator.
 
 ; ************************* INT 9h handler - keyboard (PC BIOS standard)
 
-int9:
+int_09:
 
 	push	es
 	push	ax
@@ -852,7 +852,7 @@ int9:
 
 ; ************************* INT Ah handler - timer (8086tiny internal)
 
-inta:
+int_0A:
 	; 8086tiny called interrupt 0xA frequently, at a rate dependent on the speed of your computer.
 	; This interrupt handler scales down the call rate and calls INT 8 at 18.2 times per second,
 	; as per a real PC.
@@ -880,7 +880,7 @@ inta:
 	pop	es
 	mov	bx, timetable
 	extended_get_rtc
-	
+
 	mov	ax, [cs:tm_msec]
 	sub	ax, [cs:last_int8_msec]
 
@@ -951,7 +951,7 @@ skip_timer_increment:
 	; See if we have a waiting ESC flag
 	cmp	byte [es:escape_flag-bios_data], 1
 	jne	i8_end
-	
+
 	; Did we have one last two cycles as well?
 	cmp	byte [es:escape_flag_last-bios_data], 1
 	je	i8_stuff_esc
@@ -979,7 +979,7 @@ i8_stuff_esc:
 	mov	al, 0x01
 	call	keypress_release
 
-i8_end:	
+i8_end:
 
 	; A Hercules graphics adapter flips bit 7 of I/O port 3BA on refresh
 	mov	dx, 0x3BA
@@ -991,7 +991,7 @@ i8_end:
 	pop	ds
 	pop	di
 	pop	cx
-	
+
 	pop	es
 	pop	bp
 	pop	dx
@@ -1002,14 +1002,14 @@ i8_end:
 
 ; ************************* INT 8h handler - timer
 
-int8:
+int_08:
 
 	int	0x1c
 	iret
 
 ; ************************* INT 10h handler - video services
 
-int10:
+int_10:
 
 	cmp	ah, 0x00 ; Set video mode
 	je	int10_set_vm
@@ -1086,7 +1086,7 @@ int10:
   int10_switch_to_cga_gfx:
 
 	; Switch to CGA-like graphics mode (with Hercules CRTC set for 640 x 400)
-	
+
 	mov	dx, 0x40
 	mov	es, dx
 
@@ -1110,7 +1110,7 @@ int10:
 	mov	al, 0x8a
 	out	dx, al
 
-	mov	bh, 7	
+	mov	bh, 7
 	call	clear_screen
 
 	mov	ax, 0x30
@@ -1205,7 +1205,7 @@ int10:
 	; If cursor is moved off the screen, then hide it
 	call	ansi_hide_cursor
 	jmp	skip_set_cur_ansi
-	
+
     skip_set_cur_row_max:
 
      	cmp	dl, 79
@@ -1214,7 +1214,7 @@ int10:
 	; If cursor is moved off the screen, then hide it
 	call	ansi_hide_cursor
 	jmp	skip_set_cur_ansi
-	
+
     skip_set_cur_col_max:
 
 	mov	al, 0x1B	; ANSI
@@ -1472,7 +1472,7 @@ vmem_scroll_up_copy_next_row:
 	pop	cx
 
 	dec	bl		; Scroll whole text block another line
-	jmp	cls_vmem_scroll_up_next_line	
+	jmp	cls_vmem_scroll_up_next_line
 
     cls_vmem_scroll_up_done:
 
@@ -1496,7 +1496,7 @@ vmem_scroll_up_copy_next_row:
 	pop	bx
 
 	iret
-	
+
   int10_scrolldown:
 
 	push	bx
@@ -1710,7 +1710,7 @@ int10_scroll_down_vmem_update:
 	pop	cx
 
 	dec	bl		; Scroll whole text block another line
-	jmp	cls_vmem_scroll_down_next_line	
+	jmp	cls_vmem_scroll_down_next_line
 
     cls_vmem_scroll_down_done:
 
@@ -1813,7 +1813,7 @@ int10_scroll_down_vmem_update:
 	add	bx, ax
 
 	mov	[bx], cx
-	
+
 	pop	ax
 	push	ax
 
@@ -1906,7 +1906,7 @@ cpu	8086
 	call	puts_decimal_al
 	mov	al, 'm'		; Set cursor position command
 	extended_putchar_al
-	
+
 	pop	cx
 	pop	ax
 	push	ax
@@ -2024,19 +2024,19 @@ cpu	8086
 
 ; ************************* INT 11h - get equipment list
 
-int11:	
+int_11:
 	mov	ax, [cs:equip]
 	iret
 
 ; ************************* INT 12h - return memory size
 
-int12:	
+int_12:
 	mov	ax, 0x280 ; 640K conventional memory
 	iret
 
 ; ************************* INT 13h handler - disk services
 
-int13:
+int_13:
 	cmp	ah, 0x00 ; Reset disk
 	je	int13_reset_disk
 	cmp	ah, 0x01 ; Get last status
@@ -2127,7 +2127,7 @@ int13:
 
 	mov	dl, 0		; Hard disk file handle is stored at j[0] in emulator
 
-    i_rd: 
+    i_rd:
 
 	push	si
 	push	bp
@@ -2231,7 +2231,7 @@ int13:
 	call	chs_to_abs
 
 	; Signal an error if we are trying to write beyond the end of the disk
-	
+
 	cmp	dl, 0 ; Hard disk?
 	jne	wr_fine ; No - no need for disk sector valid check - NOTE: original submission was JNAE which caused write problems on floppy disk
 
@@ -2305,7 +2305,7 @@ wr_fine:
 
 	push	cs
 	pop	es
-	mov	di, int1e	; ES:DI now points to floppy parameters table (INT 1E)
+	mov	di, int_1E	; ES:DI now points to floppy parameters table (INT 1E)
 
 	mov	ax, 0
 	mov	bx, 4
@@ -2385,7 +2385,7 @@ wr_fine:
 
 ; ************************* INT 14h - serial port functions
 
-int14:
+int_14:
 	cmp	ah, 0
 	je	int14_init
 
@@ -2398,7 +2398,7 @@ int14:
 
 ; ************************* INT 15h - get system configuration
 
-int15:	; Here we do not support any of the functions, and just return
+int_15:	; Here we do not support any of the functions, and just return
 	; a function not supported code - like the original IBM PC/XT does.
 
 	; cmp	ah, 0xc0
@@ -2418,7 +2418,7 @@ int15:	; Here we do not support any of the functions, and just return
 
 ;  int15_sysconfig: ; Return address of system configuration table in ROM
 ;
-;	mov	bx, 0xf000
+;	mov	bx, 0xF000
 ;	mov	es, bx
 ;	mov	bx, rom_config
 ;	mov	ah, 0
@@ -2443,7 +2443,7 @@ int15:	; Here we do not support any of the functions, and just return
 
 ; ************************* INT 16h handler - keyboard
 
-int16:
+int_16:
 	cmp	ah, 0x00 ; Get keystroke (remove from buffer)
 	je	kb_getkey
 	cmp	ah, 0x01 ; Check for keystroke (do not remove from buffer)
@@ -2456,7 +2456,7 @@ int16:
 	iret
 
   kb_getkey:
-	
+
 	push	es
 	push	bx
 	push	cx
@@ -2488,7 +2488,7 @@ int16:
 	pop	dx
 	pop	cx
 	pop	bx
-	pop	es	
+	pop	es
 
 	iret
 
@@ -2554,7 +2554,7 @@ int16:
 
 ; ************************* INT 17h handler - printer
 
-int17:
+int_17:
 	cmp	ah, 0x01
 	je	int17_initprint ; Initialise printer
 
@@ -2567,12 +2567,12 @@ int17:
 
 ; ************************* INT 19h = reboot
 
-int19:
+int_19:
 	jmp	boot
 
 ; ************************* INT 1Ah - clock
 
-int1a:
+int_1A:
 	cmp	ah, 0
 	je	int1a_getsystime ; Get ticks since midnight (used for RTC time)
 	cmp	ah, 2
@@ -2616,7 +2616,7 @@ int1a:
 	mov	ax, 1092 ; Clock ticks in a minute
 	mul	word [tm_min] ; AX now contains clock ticks in minutes counter
 	mov	[tm_min], ax
-	
+
 	mov	ax, 65520 ; Clock ticks in an hour
 	mul	word [tm_hour] ; DX:AX now contains clock ticks in hours counter
 
@@ -2733,13 +2733,13 @@ int1a:
 
 ; ************************* INT 1Ch - the other timer interrupt
 
-int1c:
+int_1C:
 
 	iret
 
 ; ************************* INT 1Eh - diskette parameter table
 
-int1e:
+int_1E:
 
 		db 0xdf ; Step rate 2ms, head unload time 240ms
 		db 0x02 ; Head load time 4 ms, non-DMA mode 0
@@ -2755,7 +2755,7 @@ int1e_spt	db 18	; 18 sectors per track (1.44MB)
 
 ; ************************* INT 41h - hard disk parameter table
 
-int41:
+int_41:
 
 int41_max_cyls	dw 0
 int41_max_heads	db 0
@@ -2800,23 +2800,23 @@ cga_refresh_reg	db 0
 
 ; Default interrupt handlers
 
-int0:
-int1:
-int2:
-int3:
-int4:
-int5:
-int6:
-intb:
-intc:
-intd:
-inte:
-intf:
-int18:
-int1b:
-int1d:
-
-iret
+int_00:
+int_01:
+int_02:
+int_03:
+int_04:
+int_05:
+int_06:
+int_0B:
+int_0C:
+int_0D:
+int_0E:
+int_0F:
+int_18:
+int_1B:
+int_1D:
+int_unused:
+	iret
 
 ; ************ Function call library ************
 
@@ -2848,14 +2848,14 @@ hex_to_bcd:
 	add	ax, 0x0060
 
 	; Then the low nibble of AH
-  c2:	
+  c2:
 	mov	bh, ah
 	and	bh, 0x0f
 	cmp	bh, 0x0a
 	jne	c3
 	add	ax, 0x0600
 
-  c3:	
+  c3:
 	loop	h2bloop
   h2bfin:
 	pop	bx
@@ -2866,10 +2866,10 @@ hex_to_bcd:
 puts_decimal_al:
 
 	push	ax
-	
+
 	aam
 	add	ax, 0x3030	; '00'
-	
+
 	cmp	ah, 0x30
 	je	pda_2nd		; First digit is zero, so print only 2nd digit
 
@@ -2900,7 +2900,7 @@ kb_adjust_buf:
 	jnge	kb_adjust_tail
 
 	mov	bx, [es:kbbuf_start_ptr-bios_data]
-	mov	[es:kbbuf_head-bios_data], bx	
+	mov	[es:kbbuf_head-bios_data], bx
 
   kb_adjust_tail:
 
@@ -2912,7 +2912,7 @@ kb_adjust_buf:
 	jnge	kb_adjust_done
 
 	mov	bx, [es:kbbuf_start_ptr-bios_data]
-	mov	[es:kbbuf_tail-bios_data], bx	
+	mov	[es:kbbuf_tail-bios_data], bx
 
   kb_adjust_done:
 
@@ -2927,7 +2927,7 @@ kb_adjust_buf:
 
 chs_to_abs:
 
-	push	ax	
+	push	ax
 	push	bx
 	push	cx
 	push	dx
@@ -3196,7 +3196,7 @@ reach_stack_carry:
 ; them.
 
 vmem_driver_entry:
-	
+
 	cmp	byte [cs:in_update], 1
 	je	just_finish		; If we are already in the middle of an update, skip. Needed for re-entrancy
 
@@ -3206,7 +3206,7 @@ vmem_driver_entry:
 
 gmode_test:
 
-	mov	byte [cs:int8_ctr], 0	
+	mov	byte [cs:int8_ctr], 0
 	mov	dx, 0x3b8		; Do not update if in Hercules graphics mode
 	in	al, dx
 	test	al, 2
@@ -3217,7 +3217,7 @@ just_finish:
 	ret
 
 vram_zero_check:			; Check if video memory is blank - if so, do nothing
-	
+
 	mov	byte [cs:in_update], 1
 
 	sti
@@ -3255,7 +3255,7 @@ vram_zero_check:			; Check if video memory is blank - if so, do nothing
 	mov	ds, bx
 	mov	bh, [crt_curpos_y-bios_data]
 	mov	bl, [crt_curpos_x-bios_data]
-	
+
 	cmp	bh, [cs:crt_curpos_y_last]
 	jne	restore_cursor ; Cursor position changed (but nothing else) so update just that
 	cmp	bl, [cs:crt_curpos_x_last]
@@ -3523,7 +3523,7 @@ restore_cursor:
 	mov	bl, [crt_curpos_x-bios_data]
 	mov	[cs:crt_curpos_y_last], bh
 	mov	[cs:crt_curpos_x_last], bl
-		
+
 	cmp	bh, 24
 	ja	vmem_end_hidden_cursor
 	cmp	bl, 79
@@ -3708,67 +3708,37 @@ a2shift_tbl     db	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 ; Interrupt vector table - to copy to 0:0
 
-int_table	dw int0
-          	dw 0xf000
-          	dw int1
-          	dw 0xf000
-          	dw int2
-          	dw 0xf000
-          	dw int3
-          	dw 0xf000
-          	dw int4
-          	dw 0xf000
-          	dw int5
-          	dw 0xf000
-          	dw int6
-          	dw 0xf000
-          	dw int7
-          	dw 0xf000
-          	dw int8
-          	dw 0xf000
-          	dw int9
-          	dw 0xf000
-          	dw inta
-          	dw 0xf000
-          	dw intb
-          	dw 0xf000
-          	dw intc
-          	dw 0xf000
-          	dw intd
-          	dw 0xf000
-          	dw inte
-          	dw 0xf000
-          	dw intf
-          	dw 0xf000
-          	dw int10
-          	dw 0xf000
-          	dw int11
-          	dw 0xf000
-          	dw int12
-          	dw 0xf000
-          	dw int13
-          	dw 0xf000
-          	dw int14
-          	dw 0xf000
-          	dw int15
-          	dw 0xf000
-          	dw int16
-          	dw 0xf000
-          	dw int17
-          	dw 0xf000
-          	dw int18
-          	dw 0xf000
-          	dw int19
-          	dw 0xf000
-          	dw int1a
-          	dw 0xf000
-          	dw int1b
-          	dw 0xf000
-          	dw int1c
-          	dw 0xf000
-          	dw int1d
-          	dw 0xf000
-          	dw int1e
+int_table	dw int_00, 0xF000
+		dw int_01, 0xF000
+		dw int_02, 0xF000
+		dw int_03, 0xF000
+		dw int_04, 0xF000
+		dw int_05, 0xF000
+		dw int_06, 0xF000
+		dw int_07, 0xF000
+		dw int_08, 0xF000
+		dw int_09, 0xF000
+		dw int_0A, 0xF000
+		dw int_0B, 0xF000
+		dw int_0C, 0xF000
+		dw int_0D, 0xF000
+		dw int_0E, 0xF000
+		dw int_0F, 0xF000
+		dw int_10, 0xF000
+		dw int_11, 0xF000
+		dw int_12, 0xF000
+		dw int_13, 0xF000
+		dw int_14, 0xF000
+		dw int_15, 0xF000
+		dw int_16, 0xF000
+		dw int_17, 0xF000
+		dw int_18, 0xF000
+		dw int_19, 0xF000
+		dw int_1A, 0xF000
+		dw int_1B, 0xF000
+		dw int_1C, 0xF000
+		dw int_1D, 0xF000
+		dw int_1E
 
 itbl_size	dw $-int_table
 
