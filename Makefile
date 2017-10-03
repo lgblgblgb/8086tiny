@@ -8,31 +8,31 @@
 # no_graphics compiles without SDL graphics/sound
 
 CC		= gcc
-NASM		= nasm
-OPTS_ALL	= -O3 -fsigned-char -std=c99
+OPTS_ALL	= -Ofast -fsigned-char -std=c99
 OPTS_SDL	= `sdl-config --cflags --libs`
 OPTS_NOGFX	= -DNO_GRAPHICS
 OPTS_SLOWCPU	= -DGRAPHICS_UPDATE_DELAY=25000
 SRC		= 8086tiny.c
 PRG		= 8086tiny
 ALL_PRG		= $(PRG) $(PRG)_slowcpu $(PRG)_nogfx
+BIOS_CDEF	= bios/bios_cdef.c
 
-$(PRG): $(SRC) bios Makefile
+$(PRG): $(SRC) $(BIOS_CDEF) Makefile
 	${CC} $(SRC) ${OPTS_SDL} ${OPTS_ALL} -o $@
 	strip $@
 
-$(PRG)_slowcpu: $(SRC) bios Makefile
+$(PRG)_slowcpu: $(SRC) $(BIOS_CDEF) Makefile
 	${CC} 8086tiny.c ${OPTS_SDL} ${OPTS_ALL} ${OPTS_SLOWCPU} -o $@
 	strip $@
 
-$(PRG)_nogfx: $(SRC) bios Makefile
+$(PRG)_nogfx: $(SRC) $(BIOS_CDEF) Makefile
 	${CC} $(SRC) ${OPTS_NOGFX} ${OPTS_ALL} -o $@
 	strip $@
 
-all-prg: $(ALL_PRG)
+$(BIOS_CDEF):
+	$(MAKE) -C bios
 
-bios: bios_source/bios.asm
-	$(NASM) -o $@ $<
+all-prg: $(ALL_PRG)
 
 clean:
 	rm -f $(ALL_PRG) *.o

@@ -1,0 +1,9 @@
+The original source used a custom BIOS loaded in run-time from a file.
+Though I understand it's a great way to have a compact C source size,
+I think it's better to include the BIOS in the C source itself, because
+anyway, 8086tiny simply won't work without its own BIOS.
+
+In case of any modification, say 'make' in this directory! The reason
+it's not included in the "main" Makefile: some may not have 'nasm'
+installed and want to use the shipped bios anyway when compiling
+8086tiny.

@@ -18,6 +18,15 @@
 #include "SDL.h"
 #endif
 
+// 8086tiny won't work without its own BIOS. So even if I understand, using a
+// external BIOS binary is great way to reduce the amount of C code in size,
+// we need it anyway, so for a more usable, maintainable one (it's even important
+// to have the right BIOS for the right 8086tinity.c), I think, it's
+// better to include. bios/bios_cdef.c is generated from the binary, if it's
+// not already there (which is assembled from bios/bios.asm, btw).
+// - LGB
+#include "bios/bios_cdef.c"
+
 // Emulator system constants
 #define IO_PORT_COUNT 0x10000
 #define RAM_SIZE 0x10FFF0
@@ -158,7 +167,7 @@
 unsigned char mem[RAM_SIZE], io_ports[IO_PORT_COUNT], *opcode_stream, *regs8, i_rm, i_w, i_reg, i_mod, i_mod_size, i_d, i_reg4bit, raw_opcode_id, xlat_opcode_id, extra, rep_mode, seg_override_en, rep_override_en, trap_flag, int8_asap, scratch_uchar, io_hi_lo, *vid_mem_base, spkr_en, bios_table_lookup[20][256];
 unsigned short *regs16, reg_ip, seg_override, file_index, wave_counter;
 unsigned int op_source, op_dest, rm_addr, op_to_addr, op_from_addr, i_data0, i_data1, i_data2, scratch_uint, scratch2_uint, inst_counter, set_flags_type, GRAPHICS_X, GRAPHICS_Y, pixel_colors[16], vmem_ctr;
-int op_result, disk[3], scratch_int;
+int op_result, disk[2], scratch_int;
 time_t clock_buf;
 struct timeb ms_clock;
 
@@ -279,15 +288,15 @@ int main(int argc, char **argv)
 	// But, if the HD image file is prefixed with @, then boot from the HD
 	regs8[REG_DL] = ((argc > 3) && (*argv[3] == '@')) ? argv[3]++, 0x80 : 0;
 
-	// Open BIOS (file id disk[2]), floppy disk image (disk[1]), and hard disk image (disk[0]) if specified
-	for (file_index = 3; file_index;)
+	// Open floppy disk image (disk[1]), and hard disk image (disk[0]) if specified
+	for (file_index = 2; file_index;)
 		disk[--file_index] = *++argv ? open(*argv, 32898) : 0;
 
 	// Set CX:AX equal to the hard disk image size, if present
 	CAST(unsigned)regs16[REG_AX] = *disk ? lseek(*disk, 0, 2) >> 9 : 0;
 
-	// Load BIOS image into F000:0100, and set IP to 0100
-	read(disk[2], regs8 + (reg_ip = 0x100), 0xFF00);
+	// Load BIOS image into F000:0100, and set IP to 0100. Now we use "internal" BIOS - LGB
+	memcpy(regs8 + (reg_ip = 0x100), rom_bios, sizeof rom_bios);
 
 	// Load instruction decoding helper table
 	for (int i = 0; i < 20; i++)
