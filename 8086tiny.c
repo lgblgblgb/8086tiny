@@ -1,5 +1,6 @@
 // 8086tiny: a tiny, highly functional, highly portable PC emulator/VM
 // Copyright 2013-14, Adrian Cable (adrian.cable@gmail.com) - http://www.megalith.co.uk/8086tiny
+// Further developments in this fork (C)2017 Gabor Lenart aka. LGB (lgblgblgb@gmail.com) - http://github.lgb.hu/8086tiny/
 //
 // Revision 1.25
 //
@@ -8,14 +9,23 @@
 #include <time.h>
 #include <sys/timeb.h>
 #include <memory.h>
+#include <stdlib.h>
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(__MINGW32__)
 #include <unistd.h>
 #include <fcntl.h>
 #endif
 
 #ifndef NO_GRAPHICS
 #include "SDL.h"
+#endif
+
+#ifdef __GNUC__
+#define LIKELY(__x__)	__builtin_expect(!!(__x__), 1)
+#define UNLIKELY(__x__)	__builtin_expect(!!(__x__), 0)
+#else
+#define LIKELY(__x__)	(__x__)
+#define UNLIKELY(__x__)	(__x__)
 #endif
 
 // 8086tiny won't work without its own BIOS. So even if I understand, using a
@@ -264,9 +274,27 @@ void audio_callback(void *data, unsigned char *stream, int len)
 }
 #endif
 
+static void shutdown_8086tiny ( void )
+{
+#ifdef POSIX_OS
+	if (isatty(0) == 1)
+		system("stty cooked echo");
+#endif
+#ifndef NO_GRAPHICS
+	SDL_Quit();
+#endif
+}
+
 // Emulator entry point
 int main(int argc, char **argv)
 {
+#ifdef POSIX_OS
+	if (isatty(0) == 1)
+		system("stty cbreak raw -echo min 0");	// FIXME: I was lazy, do it properly, without calling an external utility
+	if (isatty(1) == 1)
+		write(1, "\33[3J\33[H\33[2J", 11);	// this is what "clear" does
+#endif
+	atexit(shutdown_8086tiny);
 #ifndef NO_GRAPHICS
 	// Initialise SDL
 	SDL_Init(SDL_INIT_AUDIO);
@@ -303,9 +331,9 @@ int main(int argc, char **argv)
 		for (int j = 0; j < 256; j++)
 			bios_table_lookup[i][j] = regs8[regs16[0x81 + i] + j];
 
-	// Instruction execution loop. Terminates if CS:IP = 0:0
-	for (; opcode_stream = mem + 16 * regs16[REG_CS] + reg_ip, opcode_stream != mem;)
-	{
+	// Instruction execution loop
+	do {
+		opcode_stream = mem + 16 * regs16[REG_CS] + reg_ip;
 		// Set up variables to prepare for decoding an opcode
 		set_opcode(*opcode_stream);
 
@@ -706,13 +734,15 @@ int main(int argc, char **argv)
 				set_CF(0), set_OF(0);
 		}
 
+		inst_counter++;
+
 		// Poll timer/keyboard every KEYBOARD_TIMER_UPDATE_DELAY instructions
-		if (!(++inst_counter % KEYBOARD_TIMER_UPDATE_DELAY))
+		if (UNLIKELY(!(inst_counter % KEYBOARD_TIMER_UPDATE_DELAY)))
 			int8_asap = 1;
 
 #ifndef NO_GRAPHICS
 		// Update the video graphics display every GRAPHICS_UPDATE_DELAY instructions
-		if (!(inst_counter % GRAPHICS_UPDATE_DELAY))
+		if (UNLIKELY(!(inst_counter % GRAPHICS_UPDATE_DELAY)))
 		{
 			// Video card in graphics mode?
 			if (io_ports[0x3B8] & 2)
@@ -751,19 +781,15 @@ int main(int argc, char **argv)
 #endif
 
 		// Application has set trap flag, so fire INT 1
-		if (trap_flag)
+		if (UNLIKELY(trap_flag))
 			pc_interrupt(1);
 
 		trap_flag = regs8[FLAG_TF];
 
 		// If a timer tick is pending, interrupts are enabled, and no overrides/REP are active,
 		// then process the tick and check for new keystrokes
-		if (int8_asap && !seg_override_en && !rep_override_en && regs8[FLAG_IF] && !regs8[FLAG_TF])
+		if (UNLIKELY(int8_asap && !seg_override_en && !rep_override_en && regs8[FLAG_IF] && !regs8[FLAG_TF]))
 			pc_interrupt(0xA), int8_asap = 0, SDL_KEYBOARD_DRIVER;
-	}
-
-#ifndef NO_GRAPHICS
-	SDL_Quit();
-#endif
+	} while (LIKELY(opcode_stream != mem)); // Instruction execution loop. Terminates if CS:IP = 0:0
 	return 0;
 }

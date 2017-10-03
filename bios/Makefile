@@ -1,3 +1,5 @@
+# 8086tiny - Further developments in this fork (C)2017 Gabor Lenart - LGB (lgblgblgb@gmail.com) - http://github.lgb.hu/8086tiny/
+
 NASM		= nasm
 BIOS_ASM_SRC	= bios.asm
 BIOS_BIN	= bios.bin

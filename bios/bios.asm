@@ -1,5 +1,6 @@
 ; BIOS source for 8086tiny IBM PC emulator (revision 1.21 and above). Compiles with NASM.
 ; Copyright 2013-14, Adrian Cable (adrian.cable@gmail.com) - http://www.megalith.co.uk/8086tiny
+; Further developments in this fork (C)2017 Gabor Lenart - LGB (lgblgblgb@gmail.com) - http://github.lgb.hu/8086tiny/
 ;
 ; Revision 1.61
 ;

@@ -1,6 +1,12 @@
 8086tiny
 ========
 
+NOTE: this is not the original repository, but my fork, which may or may not be what you want! The original version: https://github.com/adriancable/8086tiny
+
+This repository is mainly about UNIX-like operating systems, and not so much Windows (though compilation for Windows is planned but in the form of cross-compiling done on Linux/UNIX using Mingw).
+
+# Original README
+
 8086tiny is a completely free (MIT License) open source PC XT-compatible emulator/virtual machine written in C. It is, we believe, the smallest of its kind (the fully-commented source is under 25K). Despite its size, 8086tiny provides a highly accurate 8086 CPU emulation, together with support for PC peripherals including XT-style keyboard, floppy/hard disk, clock, audio, and Hercules/CGA graphics. 8086tiny is powerful enough to run software like AutoCAD, Windows 3.0, and legacy PC games: the 8086tiny distribution includes Alley Cat, the author's favorite PC game of all time.
 
 8086tiny is highly portable and runs on practically any little endian machine, from simple 32-bit MCUs upwards. 8086tiny has successfully been deployed on 32-bit/64-bit Intel machines (Windows, Mac OS X and Linux), Nexus 4/ARM (Android), iPad 3 and iPhone 5S (iOS), and Raspberry Pi (Linux).
