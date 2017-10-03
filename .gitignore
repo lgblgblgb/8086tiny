@@ -1,0 +1,7 @@
+/8086tiny
+/8086tiny_slowcpu
+/8086tiny_nogfx
+*.o
+*.a
+*~
+*.exe
