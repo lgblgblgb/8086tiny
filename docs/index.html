@@ -1,1 +1,141 @@
-doc.html
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>8086tiny: a tiny PC emulator/virtual machine - Documentation</title>
+<meta name="keywords" content="8086tiny free small portable 8086 pc emulator" />
+<meta name="description" content="8086tiny is a free, open source PC XT-compatible emulator/virtual machine written in C. It is, we believe, the smallest of its kind." />
+<link href="8086tiny.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<!--
+This is a free CSS template provided by templatemo.com
+-->
+<div id="templatemo_container_wrapper">
+	<div class="templatemo_spacer"></div>
+<div id="templatemo_container">
+<div id="templatemo_top">
+<b>8086tiny</b> · Home
+</div>
+  <div id="templatemo_header">
+        <img src="images/logo.gif" width="780" align="middle">
+  </div>
+  
+      <div id="templatemo_left_column">
+ 		<div class="text_area" align="justify">
+
+<div class="title">About 8086tiny 1.25</div>
+	<p>8086tiny is a free, open source PC XT-compatible emulator/virtual machine written in C. It is, we believe, the smallest of its kind (the fully-commented source is around 28K). Despite its size, 8086tiny provides a highly accurate 8086 CPU emulation, together with support for PC peripherals including XT-style keyboard, floppy/hard disk, clock, timers, audio, and Hercules/CGA graphics. 8086tiny is powerful enough to run software like AutoCAD, Windows 3.0, and legacy PC games: the 8086tiny distribution includes <a href="http://en.wikipedia.org/wiki/Alley_Cat_(video_game)">Alley Cat</a>, the author's favorite PC game of all time.</p>
+	<p>8086tiny is highly portable and runs on practically any little endian machine, from simple 32-bit MCUs upwards. 8086tiny has successfully been deployed on 32-bit/64-bit Intel machines (Windows, Mac OS X and Linux), Nexus 4/ARM (Android), iPad 3 and iPhone 5S (iOS), and <a href="http://www.raspberrypi.org/">Raspberry Pi</a> (Linux).</p>
+  <p>The philosophy of 8086tiny is to keep the code base as small as possible, and through the open source license and repository on GitHub encourage individual developers to tune and extend it as per their specific requirements, adding support, for example, for more complex instruction sets (e.g. Pentium) or peripherals (e.g. mouse). Any questions, comments or suggestions are very welcome in our <a href="http://8086tiny.freeforums.net/">forum</a>.</p>
+  <p>An obfuscated version of 8086tiny (condensed into just 4043 bytes of C code) was a <a href="http://www.ioccc.org/years-spoiler.html#2013_cable3">winner of the 2013 IOCCC contest</a>. Significant interest followed for a documented, commented, maintainable version. The result is the distribution presented here.</p>
+
+	<div class="section_box2" align="justify">
+	        <div class="post_title">Feature Highlights</div>
+        	<div class="text_area">
+			<p>8086tiny's feature highlights include:</p>
+			<ul>
+			<li>Highly accurate, complete 8086 CPU emulation (including undocumented features and behavior)</li>
+			<li>Support for all standard PC peripherals: keyboard, 3.5" floppy drive, hard drive, video (Hercules/CGA graphics and text mode, including direct video memory access), real-time clock, timers, PC speaker</li>
+			<li>Disk images are compatible with standard Windows/Mac/UNIX mount tools for simple interoperability</li>
+			<li>Complete source code provided (including custom BIOS)</li>
+			</ul>
+			<p>8086tiny is highly portable, with minimal system requirements:</p>
+			<ul>
+			<li>Minimal C runtime library support required (uses POSIX file I/O and time functions only - no memory management or string functions)</li>
+			<li>Uses SDL 1.2 for graphics, but can compile without SDL for text-only applications</li>
+			<li>Storage requirement: typically around 20KB for compiled binary, 6KB for BIOS image, and 720KB/1.44MB for floppy disk image
+			<li>System RAM requirement: around 1.5MB</li>
+        	</div>
+      	</div>
+
+	<div class="section_box2" align="justify">
+	        <div class="post_title">Screenshots</div>
+        	<div class="text_area">
+			<table>
+        <tr><td><a href="images/screenshot_dos.png"><img src="images/screenshot_dos.png" width="164"></a></td><td><a href="images/screenshot_win3.png"><img src="images/screenshot_win3.png" width="164"></a></td><td><a href="images/screenshot_123.png"><img src="images/screenshot_123.png" width="164"></a></td></tr><tr><td><center>MS-DOS 6.22</center></td><td><center>Windows 3.0</center></td><td><center>Lotus 1-2-3 R2.4</center></td></tr>
+        <tr><td><a href="images/screenshot_flightsim4.png"><img src="images/screenshot_flightsim4.png" width="164"></a></td><td><a href="images/screenshot_linux.png"><img src="images/screenshot_linux.png" width="164"></a></td><td><a href="images/screenshot_qbasic.png"><img src="images/screenshot_qbasic.png" width="164"></a></td></tr><tr><td><center>MS Flight Simulator 4</center></td><td><center>Linux/ELKS 0.1.5</center></td><td><center>Microsoft QBASIC</center></td></tr>
+        <tr><td><a href="images/screenshot_alleycat.png"><img src="images/screenshot_alleycat.png" width="164"></a></td><td><a href="images/screenshot_eten.png"><img src="images/screenshot_eten.png" width="164"></a></td><td><a href="images/screenshot_carrier.png"><img src="images/screenshot_carrier.png" width="164"></a></td></tr><tr><td><center>Alley Cat</center></td><td><center>ETEN Chinese System</center></td><td><center>Carrier Command</center></td></tr>
+      </table>
+        	</div>
+      	</div>
+
+	<div class="section_box2" align="justify">
+	        <div class="post_title">Applications</div>
+        	<div class="text_area">
+			<p>Some possible applications:</p>
+			<ul>
+			<li>Run legacy PC software and games on modern hardware</li>
+			<li>Teach computer architecture and Intel assembly language in a safe, sandboxed environment</li>
+      <li>Deploy on <a href="http://www.raspberrypi.org/">Raspberry Pi</a> to make the world's cheapest ($25) complete IBM-compatible PC</li>
+			<li>Extend the code base to develop a lean, modern-processor VM</li>
+			</ul>
+			<p>If you develop an application that makes use of 8086tiny, and would like a link to it here, please get in touch.</p>
+        	</div>
+      	</div>
+        
+	<div class="section_box2" align="justify">
+	        <div class="post_title">License</div>
+        	<div class="text_area">
+			<p>8086tiny is free to use for any purpose, commercial or non-commercial, and is made available under the <a href="license.txt">MIT License</a>.</p>
+        	</div>
+      	</div>
+
+        </div>
+      </div>
+    
+    	<div id="templatemo_right_column">
+           
+            <ul class="templatemo_menu">
+              <li><a href="index.html" style="background:#0066CC; color:#FFFFFF">Home</a></li>
+              <li><a href="download.html">Download</a></li>
+              <li><a href="doc.html">Documentation</a></li>
+              <li><a href="http://8086tiny.freeforums.net/">Blog/Forum</a></li>
+          </ul>
+          
+          <div class="section_box" align="justify">
+          <div class="subtitle">Author Contact</div>
+              <b>Adrian Cable</b><br/>
+              <a href="mailto:adrian.cable@gmail.com">&#x61;&#x64;&#x72;&#x69;&#x61;&#110;&#x2e;&#x63;&#97;&#98;&#x6c;&#x65;&#x40;&#103;&#x6d;&#x61;&#105;&#108;&#x2e;&#x63;&#x6f;&#109;</a><br/>
+        
+			<p>If 8086tiny brings you joy or profit, the author welcomes modest donations as a token of appreciation.</p>
+
+		          <center><form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+		          <input type="hidden" name="cmd" value="_s-xclick">
+		          <input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----">
+		          <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+		          <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+		          </form></center>
+
+          </div>
+
+          <div class="section_box" align="justify">
+          <div class="subtitle">Latest Updates</div>
+            <b>March 19th, 2014</b>: Revision 1.25. Major CPU, graphics, text and audio performance improvements. Support for DOS Plus and CPM-86. BIOS bug fixes.<br><br>
+            <b>February 20th, 2014</b>: Revision 1.20. Major update. 2X faster CPU, 4X faster graphics. PC speaker, CGA graphics and timer support. Keyboard and video bug fixes.<br><br>
+            <b>February 9th, 2014</b>: Revision 1.15. Full keyboard support for graphics (SDL) applications. Performance improvements.<br><br>
+            <b>February 5th, 2014</b>: Revision 1.11. Binary and BIOS are smaller and faster. Keystroke dropping and character output bugs fixed.<br><br>
+            <b>February 3rd, 2014</b>: Revision 1.10. Support for running ELKS/Linux. Hard disk boot support. Fixed disk and video bugs in BIOS. CRT hardware cursor support added. Direct video memory access speed improvements. Improved Makefile for compiling without SDL.<br><br>
+            <b>January 30th, 2014</b>: GitHub repository for 8086tiny is now online. See <a href="download.html">Download</a> page.<br><br>
+            <b>January 26th, 2014</b>: Revision 1.03. Hercules CRTC resolution reprogramming now supported, needed by some applications e.g. ETEN Chinese System.<br><br>
+            <b>January 24th, 2014</b>: Revision 1.02. Source code tidy-up to remove compiler warnings.<br><br>
+            <b>January 23rd, 2014</b>: Revision 1.01. License changed to MIT License.<br><br>
+            <b>January 21st, 2014</b>: Initial release 1.00.<br>
+          </div>
+
+          <div class="section_box" align="justify">
+              <center><img src="http://www.megalith.co.uk/cgi-sys/Count.cgi?df=megal148.dat|display=Counter|ft=4|md=6|frgb=100;139;216|dd=K"></center>
+          </div>
+
+        </div>
+
+	<div id="templatemo_footer">
+    Copyright © 2013-2014 Adrian Cable · CSS template by <a href="http://www.templatemo.com/" rel="nofollow" target="_blank">templatemo.com</a>
+    </div>
+        
+</div>
+<div class="templatemo_spacer"></div>
+</div>
+
+</body>
+</html>

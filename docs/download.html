@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>8086tiny: a tiny PC emulator/virtual machine - Download</title>
+<meta name="keywords" content="8086tiny free small portable 8086 pc emulator"/>
+<meta name="description" content="8086tiny is a free, open source PC XT-compatible emulator/virtual machine written in C. It is, we believe, the smallest of its kind."/>
+<link href="8086tiny.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<!--
+This is a free CSS template provided by templatemo.com
+-->
+<div id="templatemo_container_wrapper">
+	<div class="templatemo_spacer"></div>
+<div id="templatemo_container">
+<div id="templatemo_top">
+<b>8086tiny</b> · Download
+</div>
+  <div id="templatemo_header">
+        <img src="images/logo.gif" width="780" align="middle">
+  </div>
+  
+<div id="templatemo_left_column">
+<div class="text_area" align="justify">
+
+<div class="title">Download 8086tiny Release 1.25</div>
+	<p>The 8086tiny distribution includes:</p>
+      <ul>
+      <li>C source and Makefile</li>
+      <li>BIOS source (builds with <a href="http://www.nasm.us/">NASM</a>) and ready-made BIOS binary</li>
+      <li><a href="http://www.freedos.org/">FreeDOS</a> 1.44MB floppy boot disk image from <a href="http://jorisvr.nl/freedos.html">Joris_VR</a></li>
+      <li>Documentation and license</li>
+      <li><a href="http://en.wikipedia.org/wiki/Alley_Cat_(video_game)">Alley Cat</a> PC game</li>
+      </ul>
+      <p>Comprehensive <a href="doc.html">documentation</a> is provided which should answer most questions you may have. Further questions are welcome in the <a href="http://8086tiny.freeforums.net/">forum</a>.</p>
+  
+    <div class="section_box2" align="justify">
+	        <div class="post_title">Build Instructions</div>
+        	<div class="text_area">
+      <p>To build 8086tiny, you will need a C compiler of your choice (such as <a href="http://gcc.gnu.org/">gcc</a> or <a href="http://msdn.microsoft.com/vstudio">Microsoft Visual Studio 2013</a>) and, for graphics and audio, <a href="http://libsdl.org/download-1.2.php">SDL 1.2</a>.</p>
+      <ul>
+      <li>On most platforms, just run <code>make</code> to build, and then <code>./runme</code> to launch</li>
+      <li>On slower platforms (e.g. Raspberry Pi), build with <code>make 8086tiny_slowcpu</code> to increase the graphics emulation frame rate</li>
+      <li>If your platform lacks SDL, build with <code>make no_graphics</code> to compile without graphics/audio support</li></ul>
+        	</div>
+  </div>
+
+  <div class="section_box2" align="justify">
+	        <div class="post_title">Download Links</div>
+        	<div class="text_area">
+			         <ul>
+               <li>ZIP format, for Windows: <a href="downloads/8086tiny_125.zip">8086tiny_125.zip</a></li>
+               <li>BZIP2 format, for UNIX (Mac OS X/Linux/Android): <a href="downloads/8086tiny_125.tar.bz2">8086tiny_125.tar.bz2</a></li>
+               </ul>
+            <p>A highly condensed version of 8086tiny (just 4043 bytes of C source) won the 2013 <a href="http://www.ioccc.org/">International Obfucated C Code Contest</a>. The distribution and documentation are available courtesy of the <a href="http://ioccc.org/years-spoiler.html#2013_cable3">IOCCC website</a>.</p>
+        	</div>
+  </div>
+
+  <div class="section_box2" align="justify">
+	        <div class="post_title">GitHub Repository</div>
+        	<div class="text_area">
+               <p><a href="https://github.com/adriancable/8086tiny">8086tiny is now on GitHub</a>.</p>
+               <p>8086tiny is more than an emulator, it's a community. If you want to extend 8086tiny to do great things, forking the repository is highly encouraged. If you want details of your fork to be published here, get in touch.</p>
+               <p>If you find a bug in 8086tiny, consider submitting a pull request.</p>
+        	</div>
+  </div>
+
+  <div class="section_box2" align="justify">
+	        <div class="post_title">External Resources and Disk Images</div>
+        	<div class="text_area">
+			         <ul>
+               <li><a href="http://www.nasm.us/">NASM 2.11</a>: Freeware x86 assembler for rebuilding the BIOS binary.</a></li>
+               <li><a href="http://www.osforensics.com/tools/mount-disk-images.html">OSFMount</a>: Windows tool for mounting emulator disk images on a real PC.</li>
+               <li><a href="http://www.freedos.org/">FreeDOS</a>: Free MS-DOS-compatible OS. As an alternative to the supplied FreeDOS boot disk, the <a href="https://sites.google.com/site/rugxulo/dskthree.zip">Rugxulo 1.44MB boot disk image</a> also works well with the emulator.</li>
+               <li><a href="http://elks.sourceforge.net/">ELKS</a>: A Linux distribution for 8086 that runs on 8086tiny. Try this <a href="downloads/elks0_1_5.img">ELKS 0.1.5 floppy disk boot image</a>.</li>
+               <li><a href="http://www.vetusware.com/">Vetusware</a>: Legacy DOS/Windows software source. <a href="http://bitly.com/1bU8URK">Sample 40MB hard disk image</a> containing a range of software can be found here.</li>
+               </ul>
+        	</div>
+  </div>
+
+	<div class="section_box2" align="justify">
+	        <div class="post_title">Release History</div>
+        	<div class="text_area">
+			         <ul>
+               <li><a href="downloads/8086tiny_125.tar.bz2">1.25 (March 19th, 2014)</a>: Major CPU, graphics, text and audio performance improvements. Support for DOS Plus and CPM-86. BIOS bug fixes.</li>
+               <li><a href="downloads/8086tiny_120.tar.bz2">1.20 (February 20th, 2014)</a>: 2X faster CPU, 4X faster graphics. PC speaker, CGA graphics and programmable interrupt timer support. Revamped SDL keyboard support. BIOS keyboard and video bug fixes. Improved support for slower platforms. Source code clean-up.</li>
+               <li><a href="downloads/8086tiny_115.tar.bz2">1.15 (February 9th, 2014)</a>: Full keyboard support for graphics applications - type directly into the SDL window, rather than the console. Unrolling of 8086 repeat operations and optimization of instruction decoding to improve performance. BIOS disk and video bug fixes.</li>
+               <li><a href="downloads/8086tiny_111.tar.bz2">1.11 (February 5th, 2014)</a>: Compiled binary is now 20% smaller and 10% faster. BIOS binary is 30% smaller. Fixed bug where arrow characters were not displayed on some systems. Fixed bug causing dropped keystrokes on slower systems (e.g. Raspberry Pi). With thanks to the <a href="http://www.raspberrypi.org/">Raspberry Pi Foundation</a> for the donation of a Raspberry Pi Model B.</li>
+               <li><a href="downloads/8086tiny_110.tar.bz2">1.10 (February 3rd, 2014)</a>: Support for running ELKS/Linux. Hard disk boot support. Fixed disk and video bugs in BIOS. CRT hardware cursor support added. Direct video memory access speed improvements. Improved Makefile for compiling without SDL.</li>
+               <li><a href="downloads/8086tiny_103.tar.bz2">1.03 (January 26th, 2014)</a>: Hercules CRTC resolution reprogramming now supported, needed by some applications e.g. ETEN Chinese System.</li>
+               <li><a href="downloads/8086tiny_102.tar.bz2">1.02 (January 24th, 2014)</a>: Source code tidy-up to remove compiler warnings.</li>
+               <li><a href="downloads/8086tiny_101.tar.bz2">1.01 (January 23rd, 2014)</a>: License changed to MIT License. Minor source revisions.</li>
+               <li><a href="downloads/8086tiny_100.tar.bz2">1.00 (January 21st, 2014)</a>: Initial release.</li>
+               </ul>
+        	</div>
+  </div>
+
+</div>
+</div>
+    
+    	<div id="templatemo_right_column">
+           
+            <ul class="templatemo_menu">
+              <li><a href="index.html">Home</a></li>
+              <li><a href="download.html" style="background:#0066CC; color:#FFFFFF">Download</a></li>
+              <li><a href="doc.html">Documentation</a></li>
+              <li><a href="http://8086tiny.freeforums.net/">Blog/Forum</a></li>
+          </ul>
+          
+          <div class="section_box" align="justify">
+            <div class="subtitle">Author Contact</div>
+              <b>Adrian Cable</b><br/>
+              <a href="mailto:adrian.cable@gmail.com">&#x61;&#x64;&#x72;&#x69;&#x61;&#110;&#x2e;&#x63;&#97;&#98;&#x6c;&#x65;&#x40;&#103;&#x6d;&#x61;&#105;&#108;&#x2e;&#x63;&#x6f;&#109;</a><br/>
+
+            <p>If 8086tiny brings you joy or profit, the author welcomes modest donations as a token of appreciation.</p>
+
+		          <center><form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+		          <input type="hidden" name="cmd" value="_s-xclick">
+		          <input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----">
+		          <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+		          <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+		          </form></center>
+
+          </div>
+        </div>
+
+	<div id="templatemo_footer">
+    Copyright © 2013-2014 Adrian Cable · CSS template by <a href="http://www.templatemo.com/" rel="nofollow" target="_blank">templatemo.com</a>
+    </div>
+        
+</div>
+<div class="templatemo_spacer"></div>
+</div>
+
+</body>
+</html>
