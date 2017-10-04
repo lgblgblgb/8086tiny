@@ -6,6 +6,7 @@
 //
 // This work is licensed under the MIT License. See included LICENSE.TXT.
 
+#include <stdio.h>
 #include <time.h>
 #include <sys/timeb.h>
 #include <memory.h>
@@ -16,8 +17,16 @@
 #include <fcntl.h>
 #endif
 
-#ifndef NO_GRAPHICS
-#include "SDL.h"
+#ifdef _WIN32
+#include <conio.h>
+#else
+#define O_BINARY 0
+#endif
+
+#ifdef HAVE_SDL
+#define WINDOW_TITLE "8086tiny"
+#include <SDL.h>
+#define PIXEL_FORMAT SDL_PIXELFORMAT_RGB332
 #endif
 
 #ifdef __GNUC__
@@ -167,49 +176,55 @@
 #endif
 
 // Keyboard driver for SDL
-#ifdef NO_GRAPHICS
+#ifndef HAVE_SDL
 #define SDL_KEYBOARD_DRIVER KEYBOARD_DRIVER
 #else
-#define SDL_KEYBOARD_DRIVER sdl_screen ? SDL_PollEvent(&sdl_event) && (sdl_event.type == SDL_KEYDOWN || sdl_event.type == SDL_KEYUP) && (scratch_uint = sdl_event.key.keysym.unicode, scratch2_uint = sdl_event.key.keysym.mod, CAST(short)mem[0x4A6] = 0x400 + 0x800*!!(scratch2_uint & KMOD_ALT) + 0x1000*!!(scratch2_uint & KMOD_SHIFT) + 0x2000*!!(scratch2_uint & KMOD_CTRL) + 0x4000*(sdl_event.type == SDL_KEYUP) + ((!scratch_uint || scratch_uint > 0x7F) ? sdl_event.key.keysym.sym : scratch_uint), pc_interrupt(7)) : (KEYBOARD_DRIVER)
+//#define WTF sdl_event.key.keysym.unicode
+//#define WTF 'a'
+#define WTF sdl_event.key.keysym.scancode
+#define SDL_KEYBOARD_DRIVER sdl_screen ? SDL_PollEvent(&sdl_event) && (sdl_event.type == SDL_KEYDOWN || sdl_event.type == SDL_KEYUP) && (scratch_uint = WTF, scratch2_uint = sdl_event.key.keysym.mod, CAST(short)mem[0x4A6] = 0x400 + 0x800*!!(scratch2_uint & KMOD_ALT) + 0x1000*!!(scratch2_uint & KMOD_SHIFT) + 0x2000*!!(scratch2_uint & KMOD_CTRL) + 0x4000*(sdl_event.type == SDL_KEYUP) + ((!scratch_uint || scratch_uint > 0x7F) ? sdl_event.key.keysym.sym : scratch_uint), pc_interrupt(7)) : (KEYBOARD_DRIVER)
 #endif
 
 // Global variable definitions
-unsigned char mem[RAM_SIZE], io_ports[IO_PORT_COUNT], *opcode_stream, *regs8, i_rm, i_w, i_reg, i_mod, i_mod_size, i_d, i_reg4bit, raw_opcode_id, xlat_opcode_id, extra, rep_mode, seg_override_en, rep_override_en, trap_flag, int8_asap, scratch_uchar, io_hi_lo, *vid_mem_base, spkr_en, bios_table_lookup[20][256];
-unsigned short *regs16, reg_ip, seg_override, file_index, wave_counter;
-unsigned int op_source, op_dest, rm_addr, op_to_addr, op_from_addr, i_data0, i_data1, i_data2, scratch_uint, scratch2_uint, inst_counter, set_flags_type, GRAPHICS_X, GRAPHICS_Y, pixel_colors[16], vmem_ctr;
-int op_result, disk[2], scratch_int;
-time_t clock_buf;
-struct timeb ms_clock;
+static unsigned char mem[RAM_SIZE], io_ports[IO_PORT_COUNT], *opcode_stream, *regs8, i_rm, i_w, i_reg, i_mod, i_mod_size, i_d, i_reg4bit, raw_opcode_id, xlat_opcode_id, extra, rep_mode, seg_override_en, rep_override_en, trap_flag, int8_asap, scratch_uchar, io_hi_lo, *vid_mem_base, spkr_en, bios_table_lookup[20][256];
+static unsigned short *regs16, reg_ip, seg_override, file_index, wave_counter;
+static unsigned int op_source, op_dest, rm_addr, op_to_addr, op_from_addr, i_data0, i_data1, i_data2, scratch_uint, scratch2_uint, inst_counter, set_flags_type, GRAPHICS_X, GRAPHICS_Y, pixel_colors[16], vmem_ctr;
+static int op_result, disk[2], scratch_int;
+static time_t clock_buf;
+static struct timeb ms_clock;
 
-#ifndef NO_GRAPHICS
-SDL_AudioSpec sdl_audio = {44100, AUDIO_U8, 1, 0, 128};
-SDL_Surface *sdl_screen;
-SDL_Event sdl_event;
-unsigned short vid_addr_lookup[VIDEO_RAM_SIZE], cga_colors[4] = {0 /* Black */, 0x1F1F /* Cyan */, 0xE3E3 /* Magenta */, 0xFFFF /* White */};
+#ifdef HAVE_SDL
+static SDL_Window *sdl_win = NULL;
+static SDL_Renderer *sdl_ren = NULL;
+static SDL_Texture *sdl_tex = NULL;
+static SDL_AudioSpec sdl_audio = {44100, AUDIO_U8, 1, 0, 128};
+static SDL_Surface *sdl_screen = NULL;
+static SDL_Event sdl_event;
+static unsigned short vid_addr_lookup[VIDEO_RAM_SIZE], cga_colors[4] = {0 /* Black */, 0x1F1F /* Cyan */, 0xE3E3 /* Magenta */, 0xFFFF /* White */};
 #endif
 
 // Helper functions
 
 // Set carry flag
-char set_CF(int new_CF)
+static char set_CF(int new_CF)
 {
 	return regs8[FLAG_CF] = !!new_CF;
 }
 
 // Set auxiliary flag
-char set_AF(int new_AF)
+static char set_AF(int new_AF)
 {
 	return regs8[FLAG_AF] = !!new_AF;
 }
 
 // Set overflow flag
-char set_OF(int new_OF)
+static char set_OF(int new_OF)
 {
 	return regs8[FLAG_OF] = !!new_OF;
 }
 
 // Set auxiliary and overflow flag after arithmetic operations
-char set_AF_OF_arith()
+static char set_AF_OF_arith()
 {
 	set_AF((op_source ^= op_dest ^ op_result) & 0x10);
 	if (op_result == op_dest)
@@ -219,7 +234,7 @@ char set_AF_OF_arith()
 }
 
 // Assemble and return emulated CPU FLAGS register in scratch_uint
-void make_flags()
+static void make_flags()
 {
 	scratch_uint = 0xF002; // 8086 has reserved and unused flags set to 1
 	for (int i = 9; i--;)
@@ -227,7 +242,7 @@ void make_flags()
 }
 
 // Set emulated CPU FLAGS register from regs8[FLAG_xx] values
-void set_flags(int new_flags)
+static void set_flags(int new_flags)
 {
 	for (int i = 9; i--;)
 		regs8[FLAG_CF + i] = !!(1 << bios_table_lookup[TABLE_FLAGS_BITFIELDS][i] & new_flags);
@@ -235,7 +250,7 @@ void set_flags(int new_flags)
 
 // Convert raw opcode to translated opcode index. This condenses a large number of different encodings of similar
 // instructions into a much smaller number of distinct functions, which we then execute
-void set_opcode(unsigned char opcode)
+static void set_opcode(unsigned char opcode)
 {
 	xlat_opcode_id = bios_table_lookup[TABLE_XLAT_OPCODE][raw_opcode_id = opcode];
 	extra = bios_table_lookup[TABLE_XLAT_SUBFUNCTION][opcode];
@@ -244,7 +259,7 @@ void set_opcode(unsigned char opcode)
 }
 
 // Execute INT #interrupt_num on the emulated machine
-char pc_interrupt(unsigned char interrupt_num)
+static char pc_interrupt(unsigned char interrupt_num)
 {
 	set_opcode(0xCD); // Decode like INT
 
@@ -259,13 +274,13 @@ char pc_interrupt(unsigned char interrupt_num)
 }
 
 // AAA and AAS instructions - which_operation is +1 for AAA, and -1 for AAS
-int AAA_AAS(char which_operation)
+static int AAA_AAS(char which_operation)
 {
 	return (regs16[REG_AX] += 262 * which_operation*set_AF(set_CF(((regs8[REG_AL] & 0x0F) > 9) || regs8[FLAG_AF])), regs8[REG_AL] &= 0x0F);
 }
 
-#ifndef NO_GRAPHICS
-void audio_callback(void *data, unsigned char *stream, int len)
+#ifdef HAVE_SDL
+static void audio_callback(void *data, unsigned char *stream, int len)
 {
 	for (int i = 0; i < len; i++)
 		stream[i] = (spkr_en == 3) && CAST(unsigned short)mem[0x4AA] ? -((54 * wave_counter++ / CAST(unsigned short)mem[0x4AA]) & 1) : sdl_audio.silence;
@@ -274,30 +289,50 @@ void audio_callback(void *data, unsigned char *stream, int len)
 }
 #endif
 
+
+#ifdef HAVE_SDL
+static void free_sdl_video_resources ( void )
+{
+	if (sdl_tex) SDL_DestroyTexture(sdl_tex), sdl_tex = NULL;
+	if (sdl_screen) SDL_FreeSurface(sdl_screen), sdl_screen = NULL;
+	if (sdl_ren) SDL_DestroyRenderer(sdl_ren), sdl_ren = NULL;
+	if (sdl_win) SDL_DestroyWindow(sdl_win), sdl_win = NULL;
+}
+#endif
+
+
 static void shutdown_8086tiny ( void )
 {
-#ifdef POSIX_OS
+#ifdef POSIX_SYS
 	if (isatty(0) == 1)
 		system("stty cooked echo");
 #endif
-#ifndef NO_GRAPHICS
+#ifdef HAVE_SDL
+	free_sdl_video_resources();
 	SDL_Quit();
 #endif
 }
 
+
 // Emulator entry point
 int main(int argc, char **argv)
 {
-#ifdef POSIX_OS
+#ifdef HAVE_SDL
+	if (SDL_Init(0)) {
+		fprintf(stderr, "Cannot initialize core SDL: %s\n", SDL_GetError());
+		return 1;
+	}
+#endif
+	atexit(shutdown_8086tiny);
+#ifdef POSIX_SYS
 	if (isatty(0) == 1)
 		system("stty cbreak raw -echo min 0");	// FIXME: I was lazy, do it properly, without calling an external utility
 	if (isatty(1) == 1)
 		write(1, "\33[3J\33[H\33[2J", 11);	// this is what "clear" does
 #endif
-	atexit(shutdown_8086tiny);
-#ifndef NO_GRAPHICS
+#ifdef HAVE_SDL
 	// Initialise SDL
-	SDL_Init(SDL_INIT_AUDIO);
+	SDL_InitSubSystem(SDL_INIT_AUDIO);
 	sdl_audio.callback = audio_callback;
 #ifdef _WIN32
 	sdl_audio.samples = 512;
@@ -318,7 +353,7 @@ int main(int argc, char **argv)
 
 	// Open floppy disk image (disk[1]), and hard disk image (disk[0]) if specified
 	for (file_index = 2; file_index;)
-		disk[--file_index] = *++argv ? open(*argv, 32898) : 0;
+		disk[--file_index] = *++argv ? open(*argv, O_BINARY | O_RDWR | O_EXCL) : 0;
 
 	// Set CX:AX equal to the hard disk image size, if present
 	CAST(unsigned)regs16[REG_AX] = *disk ? lseek(*disk, 0, 2) >> 9 : 0;
@@ -621,7 +656,7 @@ int main(int argc, char **argv)
 				R_M_OP(io_ports[scratch_uint], =, regs8[REG_AL]);
 				scratch_uint == 0x61 && (io_hi_lo = 0, spkr_en |= regs8[REG_AL] & 3); // Speaker control
 				(scratch_uint == 0x40 || scratch_uint == 0x42) && (io_ports[0x43] & 6) && (mem[0x469 + scratch_uint - (io_hi_lo ^= 1)] = regs8[REG_AL]); // PIT rate programming
-#ifndef NO_GRAPHICS
+#ifdef HAVE_SDL
 				scratch_uint == 0x43 && (io_hi_lo = 0, regs8[REG_AL] >> 6 == 2) && (SDL_PauseAudio((regs8[REG_AL] & 0xF7) != 0xB6), 0); // Speaker enable
 #endif
 				scratch_uint == 0x3D5 && (io_ports[0x3D4] >> 1 == 6) && (mem[0x4AD + !(io_ports[0x3D4] & 1)] = regs8[REG_AL]); // CRT video RAM start offset
@@ -740,7 +775,7 @@ int main(int argc, char **argv)
 		if (UNLIKELY(!(inst_counter % KEYBOARD_TIMER_UPDATE_DELAY)))
 			int8_asap = 1;
 
-#ifndef NO_GRAPHICS
+#ifdef HAVE_SDL
 		// Update the video graphics display every GRAPHICS_UPDATE_DELAY instructions
 		if (UNLIKELY(!(inst_counter % GRAPHICS_UPDATE_DELAY)))
 		{
@@ -750,6 +785,7 @@ int main(int argc, char **argv)
 				// If we don't already have an SDL window open, set it up and compute color and video memory translation tables
 				if (!sdl_screen)
 				{
+					SDL_PixelFormat *fmt;
 					for (int i = 0; i < 16; i++)
 						pixel_colors[i] = mem[0x4AC] ? // CGA?
 							cga_colors[(i & 12) >> 2] + (cga_colors[i & 3] << 16) // CGA -> RGB332
@@ -758,23 +794,36 @@ int main(int argc, char **argv)
 					for (int i = 0; i < GRAPHICS_X * GRAPHICS_Y / 4; i++)
 						vid_addr_lookup[i] = i / GRAPHICS_X * (GRAPHICS_X / 8) + (i / 2) % (GRAPHICS_X / 8) + 0x2000*(mem[0x4AC] ? (2 * i / GRAPHICS_X) % 2 : (4 * i / GRAPHICS_X) % 4);
 
-					SDL_Init(SDL_INIT_VIDEO);
-					sdl_screen = SDL_SetVideoMode(GRAPHICS_X, GRAPHICS_Y, 8, 0);
-					SDL_EnableUNICODE(1);
-					SDL_EnableKeyRepeat(500, 30);
+					SDL_InitSubSystem(SDL_INIT_VIDEO);
+					sdl_win = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, GRAPHICS_X, GRAPHICS_Y, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+					SDL_RaiseWindow(sdl_win);
+					sdl_ren = SDL_CreateRenderer(sdl_win, -1, 0);	// SDL_RENDERER_ACCELERATED
+					SDL_RenderSetLogicalSize(sdl_ren, GRAPHICS_X, GRAPHICS_Y);
+					fmt = SDL_AllocFormat(PIXEL_FORMAT);
+					sdl_screen = SDL_CreateRGBSurface(0, GRAPHICS_X, GRAPHICS_Y, fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, fmt->Amask);
+					SDL_FreeFormat(fmt);
+					sdl_tex = SDL_CreateTexture(sdl_ren, PIXEL_FORMAT, SDL_TEXTUREACCESS_STREAMING, GRAPHICS_X, GRAPHICS_Y);
+					SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
+#ifdef _WIN32
+					SDL_SetHint(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, "1");
+#endif
+					SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+					SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
 				}
 
 				// Refresh SDL display from emulated graphics card video RAM
 				vid_mem_base = mem + 0xB0000 + 0x8000*(mem[0x4AC] ? 1 : io_ports[0x3B8] >> 7); // B800:0 for CGA/Hercules bank 2, B000:0 for Hercules bank 1
 				for (int i = 0; i < GRAPHICS_X * GRAPHICS_Y / 4; i++)
 					((unsigned *)sdl_screen->pixels)[i] = pixel_colors[15 & (vid_mem_base[vid_addr_lookup[i]] >> 4*!(i & 1))];
-
-				SDL_Flip(sdl_screen);
+				SDL_UpdateTexture(sdl_tex, NULL, sdl_screen->pixels, sdl_screen->pitch);
+				SDL_RenderClear(sdl_ren);
+				SDL_RenderCopy(sdl_ren, sdl_tex, NULL, NULL);
+				SDL_RenderPresent(sdl_ren);
 			}
 			else if (sdl_screen) // Application has gone back to text mode, so close the SDL window
 			{
+				free_sdl_video_resources();
 				SDL_QuitSubSystem(SDL_INIT_VIDEO);
-				sdl_screen = 0;
 			}
 			SDL_PumpEvents();
 		}

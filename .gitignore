@@ -1,7 +1,11 @@
 /8086tiny
 /8086tiny_slowcpu
 /8086tiny_nogfx
+/*.exe
+/*.html.mem
+/*.js
+/*.html
+/*.dll
 *.o
 *.a
 *~
-*.exe
